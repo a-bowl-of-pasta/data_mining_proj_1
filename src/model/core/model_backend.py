@@ -14,5 +14,11 @@ class Backend:
     def load_dataset(self):
         pass
 
+    def kfold_validation(self, k_folds):
+        pass
+
+    def binary_encoding(self):
+        pass
+
     def TEST_BACKEND(self):
         return "backend works fine"
