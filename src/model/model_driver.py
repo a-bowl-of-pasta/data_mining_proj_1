@@ -35,13 +35,13 @@ class Knn_model:
 
         
     # 4: Gear Data for ML   
-    def learn_model(self):
+    def data_split(self):
 
         self.train_dataset, self.test_dataset = self.backend.train_test_split(self.dataset)
 
         #---- Split output Field out of data
-        self.train_features,    self.test_features = self.backend.input_train_test(train_dataset, test_dataset)
-        self.train_labels,   self.test_labels = self.backend.output_train_test(train_dataset,test_dataset)
+        self.train_features, self.test_features = self.backend.features_train_test(self.train_dataset, self.test_dataset)
+        self.train_labels,   self.test_labels   = self.backend.labels_train_test(self.train_dataset,self.test_dataset)
 
         print("model ready to test")
 

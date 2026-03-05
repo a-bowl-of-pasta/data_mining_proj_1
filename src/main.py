@@ -30,16 +30,16 @@ if __name__ == "__main__":
     input("press <enter> to continue program")
     os.system('cls')  
     
-    # === k fold validation 
-    knn.run_k_fold_validation(Kfolds)
- 
-    # === learn model
-    knn.learn_model()
+    # === splits data & preps for k_fold / testing
+    knn.data_split()
     input("press <enter> to continue program")
     os.system('cls')  
+    
+    # === k fold validation 
+    knn.run_k_fold_validation(Kfolds)
 
     # === final model evaluation
-    knn.model_evaluation()
+    #knn.model_evaluation()
     
 
 # DataPoint = each piece of data from the dataset
