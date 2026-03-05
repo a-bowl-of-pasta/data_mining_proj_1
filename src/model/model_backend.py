@@ -147,21 +147,21 @@ class Backend:
     
 
     #4: Generate Train/Test Inputs  
-    def input_train_test(self, training_data, testing_data):
+    def features_train_test(self, training_data, testing_data):
        
-        input_train = training_data.drop("PHQ_9_Severity", axis=1)
-        input_test = testing_data.drop("PHQ_9_Severity", axis=1)
+        features_train = training_data.drop("PHQ_9_Severity", axis=1)
+        features_test = testing_data.drop("PHQ_9_Severity", axis=1)
 
-        return input_train, input_test
+        return features_train, features_test
 
 
     #4: Generate Train/Test Outputs
-    def output_train_test(self, training_data, testing_data):
+    def labels_train_test(self, training_data, testing_data):
         
-        output_train = training_data["PHQ_9_Severity"]
-        output_test = testing_data["PHQ_9_Severity"]
+        labels_train = training_data["PHQ_9_Severity"]
+        labels_test = testing_data["PHQ_9_Severity"]
 
-        return output_train, output_test
+        return labels_train, labels_test
 
     
     def test_backend_api(self):

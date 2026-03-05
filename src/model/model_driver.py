@@ -37,35 +37,51 @@ class Knn_model:
     # 4: Gear Data for ML   
     def learn_model(self):
 
-        train_dataset, test_dataset = self.backend.train_test_split(self.dataset)
+        self.train_dataset, self.test_dataset = self.backend.train_test_split(self.dataset)
 
         #---- Split output Field out of data
-        self.train_input,    self.test_input = self.backend.input_train_test(train_dataset, test_dataset)
-        self.train_output,   self.test_output = self.backend.output_train_test(train_dataset,test_dataset)
+        self.train_features,    self.test_features = self.backend.input_train_test(train_dataset, test_dataset)
+        self.train_labels,   self.test_labels = self.backend.output_train_test(train_dataset,test_dataset)
 
         print("model ready to test")
 
 
-    # in progress ::
+    # in progress :: 
+    # [] fold training | train the model in the fold
+    # [] fold testing  | test the model in the fold
+    # [] fold evals    | final evaluations per fold, so we can pick optimal k value
     def run_k_fold_validation(self, KFolds):
         
         # 4: K-Fold split   
-        input_fold = self.backend.generate_k_folds(self.train_input, KFolds)
-        output_fold = self.backend.generate_k_folds(self.train_output, KFolds)
+        feature_fold = self.backend.generate_k_folds(self.train_features, KFolds)
+        label_fold = self.backend.generate_k_folds(self.train_labels, KFolds)
 
+        # runs fold validation K times
         for i in range(KFolds):
             
-            val_input_data = input_fold[i]
-            val_output_data = output_fold[i]
+            # data held out to test current Kfold run
+            val_feature_data = feature_fold[i]
+            val_label_data = label_fold[i]
             
-            training_input_data = pd.concat(input_fold[:i] + input_fold[i + 1:])
-            training_output_data = pd.concat(output_fold[:i] + output_fold[i + 1:])
+            # data used to train during current Kfold run
+            training_feature_data = pd.concat(feature_fold[:i] + feature_fold[i + 1:])
+            training_label_data = pd.concat(label_fold[:i] + label_fold[i + 1:])
 
 
             print(f"\nFold {i + 1}")
-            print("Training size:", len(training_input_data))
-            print("Validation size:", len(val_input_data))
+            print("Training size:", len(training_feature_data))
+            print("Validation size:", len(val_feature_data))
     
+        
+
+    # 5: final model evaluation
+    def model_evaluation():
+        pass
+
+    
+    # 6: display final clusters / classifications
+    def peek_final_clusters():
+        pass
         
 # =================================== delete all of this after meeting
 

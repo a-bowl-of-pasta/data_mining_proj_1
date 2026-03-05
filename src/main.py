@@ -1,4 +1,15 @@
 from model.model_driver import Knn_model as model
+import os
+
+# =================== things that need to get done =================
+#  
+#  [] finish k-fold validation method
+#  [] test k-fold validation method
+#  [] write a data loader that assigns ground truths
+#  [] write a model evaluation method
+#  [] clean up project code & debug
+
+
 
 if __name__ == "__main__": 
 
@@ -12,19 +23,23 @@ if __name__ == "__main__":
     Kvalue = 5
     Kfolds = 5
 
-    # ==== build and learn model
+    # ==== build model
     knn = model(Kvalue)
 
     knn.build_model(datasetFile)
     input("press <enter> to continue program")
-
-
-    knn.learn_model()
-    input("press <enter> to continue program")
-
-
+    os.system('cls')  
+    
     # === k fold validation 
     knn.run_k_fold_validation(Kfolds)
+ 
+    # === learn model
+    knn.learn_model()
+    input("press <enter> to continue program")
+    os.system('cls')  
+
+    # === final model evaluation
+    knn.model_evaluation()
     
 
 # DataPoint = each piece of data from the dataset
