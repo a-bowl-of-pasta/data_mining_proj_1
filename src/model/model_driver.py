@@ -137,13 +137,14 @@ class Knn_model:
     def test_svm(self):
 
         print("Testing SVM Model...")
+        """
         # Cast Datafram to nummpy array
         x_input = torch.tensor(self.test_features.values, dtype=torch.float32)
         
         outputs = self.svm_model(x_input).detach().numpy()
 
         self.predictions = (outputs >= 0).astype(int).flatten()
-
+        """
         print("Testing Complete")
     # =================================== delete all of this after meeting
 
