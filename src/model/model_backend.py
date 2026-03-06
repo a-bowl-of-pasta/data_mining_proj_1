@@ -73,7 +73,7 @@ class Backend:
         #--User_Archetype
         Mental_Health_Data["User_Archetype"] = Mental_Health_Data["User_Archetype"].map({
             "Digital Minimalist": 0,
-            "Passive scroller": 0,
+            "Passive Scroller": 0,
             "Hyper-Connected": 1,
             "Average User": 1
         })
@@ -87,12 +87,12 @@ class Backend:
             "22": 1
         })"""
         
-        #-- Primary_Platform
+      #-- Primary_Platform
         Mental_Health_Data["Primary_Platform"] = Mental_Health_Data["Primary_Platform"].map({
             "Facebook": 0,
             "Twitter/X": 0,
             "LinkedIn": 0,
-            "Youtube": 1,
+            "YouTube": 1,
             "Snapchat": 1,
             "TikTok": 1,
             "Instagram": 1
@@ -107,6 +107,27 @@ class Backend:
             "Self-Help/Motivation": 1,
             "Educational/Tech": 1
         })
+
+        #-- GAD_7_Severity
+        #0 = No/Low anxiety → Minimal, Mild
+        #1 = Clinically significant anxiety → Moderate, Severe
+        Mental_Health_Data["GAD_7_Severity"] = Mental_Health_Data["GAD_7_Severity"].map({
+            "Mild": 0,
+            "Minimal": 0,
+            "Moderate": 1,
+            "Severe": 1
+        })
+
+         #-- PHQ_9 Severity
+         #Target Label
+        Mental_Health_Data["PHQ_9_Severity"] = Mental_Health_Data["PHQ_9_Severity"].map({
+          "Mild":'M',
+          'None-Minimal':'NM',
+          'Moderate':'MO',
+          'Moderately Severe':'MS',
+          'Severe':'S'
+        })
+
 
         return Mental_Health_Data
 
@@ -127,7 +148,8 @@ class Backend:
             max_val = Mental_Health_Data[col].max()
 
             # run equation: Current - min / max - min
-            Mental_Health_Data[col] = (Mental_Health_Data[col] - min_val) / (max_val - min_val)
+            if max_val != min_val:
+                Mental_Health_Data[col] = (Mental_Health_Data[col] - min_val) / (max_val - min_val)
 
         return Mental_Health_Data
     
