@@ -5,9 +5,9 @@ import os
 #  
 #  [] finish k-fold validation method
 #  [] test k-fold validation method
-#  [] write a data loader that assigns ground truths
 #  [] write a model evaluation method
 #  [] clean up project code & debug
+#  [] SVM
 
 
 

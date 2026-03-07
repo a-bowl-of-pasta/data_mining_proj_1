@@ -163,6 +163,9 @@ class Backend:
 
         return labels_train, labels_test
 
+    # entropy : -sum(P_i * log_2(P_i))
+    def entropy_calc(self, dataset):
+        pass
     
     def test_backend_api(self):
         return "backend works fine"

@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 
 # can be changed to whatever model we are actually using
-class Knn_model:
+class decision_tree_model:
     
     def __init__(self, k_value): 
         self.K_value = k_value
