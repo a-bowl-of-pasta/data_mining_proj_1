@@ -1,4 +1,5 @@
-from model.model_driver import Knn_model as model
+from model.model_driver import decision_tree_model 
+
 import os
 
 # =================== things that need to get done =================
@@ -24,19 +25,19 @@ if __name__ == "__main__":
     Kfolds = 5
 
     # ==== build model
-    knn = model(Kvalue)
+    decision_tree = decision_tree_model()
 
-    knn.build_model(datasetFile)
+    decision_tree.build_model(datasetFile)
     input("press <enter> to continue program")
     os.system('cls')  
     
     # === splits data & preps for k_fold / testing
-    knn.data_split()
+    decision_tree.data_split()
     input("press <enter> to continue program")
     os.system('cls')  
     
     # === k fold validation 
-    knn.run_k_fold_validation(Kfolds)
+    decision_tree.run_k_fold_validation(Kfolds)
 
     # === final model evaluation
     #knn.model_evaluation()

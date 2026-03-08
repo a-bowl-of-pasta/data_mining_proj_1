@@ -16,34 +16,55 @@ import numpy as np
 # can be changed to whatever model we are actually using
 class decision_tree_model:
     
-    def __init__(self, k_value): 
-        self.K_value = k_value
+    def __init__(self): 
         self.backend = Backend()
 
+# ===================================== helper methods
+  # 4: Gear Data for ML
+    def data_split(self):
+        self.train_dataset, self.test_dataset = self.backend.train_test_split(self.dataset)
+
+        # ---- Split output Field out of data
+        self.train_features, self.test_features = self.backend.features_train_test(self.train_dataset,self.test_dataset)
+        self.train_labels, self.test_labels = self.backend.labels_train_test(self.train_dataset, self.test_dataset)
+
+        print("model ready to test")
+
+    def confusion_matrix(y_pred, y_true):
+        # True Pos: sum up when true is 1 and predicted is 1
+        truepos= np.sum((y_true == 1) & (y_pred == 1))
+       
+        # True Neg: sum up when true is 0 and predicted is 0
+        trueneg = np.sum((y_true == 0) & (y_pred == 0))
+        #-------- This could be Backwards
+        
+        # False Pos: sum up when true is 0 and predicted is 1
+        false_pos = np.sum((y_true == 0) & (y_pred == 1))
+        
+        # True Neg: sum up when true is 1 and predicted is 0
+        false_neg = np.sum((y_true == 1) & (y_pred == 0))
+
+        return trueneg, truepos, false_neg, false_pos
+
+
+# ===================================== main methods
     # 1: setup model
     def build_model(self, dataFile):
         print("Currently building model ... ")
         print()
 
         dataset = self.backend.load_dataset(dataFile)
-        dataset = self.backend.binary_encoding(dataset)
         dataset = self.backend.normalize_data(dataset)
+        dataset = self.backend.binary_encoding(dataset)
+
         self.dataset = dataset
+       
         print("Normalized Data:")
         print(dataset.head())
 
         print(" ... model built | ready to learn")
 
-    # 4: Gear Data for ML
-    def data_split(self):
-        self.train_dataset, self.test_dataset = self.backend.train_test_split(self.dataset)
-
-        # ---- Split output Field out of data
-        self.train_features, self.test_features = self.backend.features_train_test(self.train_dataset,
-                                                                                   self.test_dataset)
-        self.train_labels, self.test_labels = self.backend.labels_train_test(self.train_dataset, self.test_dataset)
-
-        print("model ready to test")
+  
 
     # in progress ::
     # [] fold training | train the model in the fold
@@ -56,6 +77,7 @@ class decision_tree_model:
 
         # runs fold validation K times
         for i in range(KFolds):
+            
             # data held out to test current Kfold run
             val_feature_data = feature_fold[i]
             val_label_data = label_fold[i]
@@ -73,15 +95,7 @@ class decision_tree_model:
         y_true = self.test_labels.values
         y_pred = self.predictions
 
-        # True Pos: sum up when true is 1 and predicted is 1
-        truepos= np.sum((y_true == 1) & (y_pred == 1))
-        # True Neg: sum up when true is 0 and predicted is 0
-        trueneg = np.sum((y_true == 0) & (y_pred == 0))
-        #-------- This could be Backwards
-        # False Pos: sum up when true is 0 and predicted is 1
-        false_pos = np.sum((y_true == 0) & (y_pred == 1))
-        # True Neg: sum up when true is 1 and predicted is 0
-        false_neg = np.sum((y_true == 1) & (y_pred == 0))
+        trueneg, truepos, false_neg, false_pos = confusion_matrix(y_pred, y_true)
 
         accuracy = (truepos+ trueneg) / len(y_true)
         precision = truepos / (truepos + false_pos) 
@@ -89,37 +103,31 @@ class decision_tree_model:
         specificity = trueneg / (trueneg + false_pos) 
 
         print("Model Evaluation")
-        print("True Positive:", truepos)
-        print("False Positive:", false_pos)
-        print("False Negative:", false_neg)
-        print("True Negative:", trueneg)
+        print(f"True Positive: {truepos}\nFalse Positive: {false_pos}")
+        print(f"True Negative: {trueneg}\nFalse Negative: {false_neg}")
 
-        print("Accuracy:", accuracy)
-        print("Precision:", precision)
-        print("Sensitivity:", sensitivity)
-        print("Specificity:", specificity)
-
-
-
-    # 6: display final clusters / classifications
-    def peek_final_clusters():
-        pass
-
+        print(f"Accuracy: {accuracy}\nPrecision: {precision}\nSensitivity: {sensitivity}\nSpecificity: {specificity}")
+      
+# =============================== !!!!!!!!!!!!!! finish this class up
+class svm_model():
     # 7 SVM
     def train_svm(self, epochs=100):
 
         print("Starting Training of the SVM Model...")
+        
         # At this point self has Pandas Object, convert dataframe to numpy array
         x_input = torch.tensor(self.train_features.values, dtype=torch.float32)
         y_output = torch.tensor(self.train_labels.values, dtype=torch.float32)
 
         # SVM requirement convert labels 0 -> -1
         y_output = torch.where(y_output == 0, -1, 1)
+        
         #define model object with SVM contruction of the
         self.svm_model = SVM(x_input.shape[1])
 
         # Now we start our Stochastic Gradient Descent Engine
         optimizer = optim.SGD(self.svm_model.parameters(), lr=0.01)
+        
         # Start Loop for Datapasses
         for epoch in range(epochs):
             optimizer.zero_grad()
@@ -146,7 +154,6 @@ class decision_tree_model:
         self.predictions = (outputs >= 0).astype(int).flatten()
         """
         print("Testing Complete")
-
 
 class SVM(nn.Module):
 
