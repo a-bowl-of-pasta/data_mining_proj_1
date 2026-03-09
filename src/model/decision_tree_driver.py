@@ -78,13 +78,36 @@ class Decision_Tree_Model:
 
     # 5: final evaluation 
     def model_eval(self):
-                
-                
-        np.array([self._traverse_tree(x, self.root) for x in X])
+        print("testing and evaluating model...")
+        # generate predictions by traversing tree for each test row
+        feature_array = self.test_features.values
+        ground_truth = self.test_labels.values
 
+        predictions = np.array([self._traverse_tree(x, self.root) for x in feature_array])
+
+        predictions = predictions.flatten()
+        ground_truth = ground_truth.flatten()
+
+        print(predictions[:10])
+        print(ground_truth[:10])
+
+        trueneg, truepos, false_neg, false_pos = self._confusion_matrix(predictions, ground_truth)
+
+        self.accuracy = (truepos+ trueneg) / len(ground_truth)
+        self.precision = truepos / (truepos + false_pos) 
+        self.sensitivity = truepos / (truepos + false_neg) 
+        self.specificity = trueneg / (trueneg + false_pos) 
+
+        print("confusion matrix breakdown :: ")
+        print(f"True Positive: {truepos}\nFalse Positive: {false_pos}")
+        print(f"True Negative: {trueneg}\nFalse Negative: {false_neg}")
+
+        print("... evaluation metrics ready | run <model.evaluation_summary()>")
+                
     # = = = = = = = = = = = = = = = = = API helper methods 
-    # ================= phase 1 & 2 helpers : data loading, processing, and splits / learn prep
     
+    
+    # ----- phase 1 & 2 helpers : data loading, processing, and splits / learn prep
     # splits the data | first into train & test | second into features & labels
     def _data_split(self):
         ''' 
@@ -99,9 +122,9 @@ class Decision_Tree_Model:
         print("generating :: feature and ground truth sets for train and test")
         self.train_features, self.test_features = self.backend.features_train_test(self.train_dataset,self.test_dataset)
         self.train_labels, self.test_labels = self.backend.labels_train_test(self.train_dataset, self.test_dataset)
-    
-    # ================ phase 3 helpers : model learning
-    
+        
+
+    # ----- phase 3 helpers : model learning
     # sets up the tree structure 
     def _build_tree(self, features, labels, depth):
 
@@ -140,10 +163,12 @@ class Decision_Tree_Model:
             right=right_subtree
         )
 
-    # ============== phase 4 helpers : k fold validation 
-    
-    # ============== phase 5 helpers : model evaluations  
-    
+
+    # ----- phase 4 helpers : k fold validation 
+
+
+
+    # ----- phase 5 helpers : model evaluations   
     # tree traversal, used when predicting 
     def _traverse_tree(self, x, node):
             if node.is_leaf_node():
@@ -173,70 +198,25 @@ class Decision_Tree_Model:
     # = = = = = = = = = = = = = = = = basic output methods 
     def peek_processed_data(self):
         print("peeking processed data | data frame head")
-        print(self.dataset.head())
+        
+        print("train dataset")
+        print(self.train_dataset.head())
+        
+        print("test dataset")
+        print(self.test_dataset.head())
+
+    def evaluation_summary(self):
+
+        print(f"Accuracy:    {self.accuracy}")
+        print(f"Precision:   {self.precision}")
+        print(f"Sensitivity: {self.sensitivity}")
+        print(f"Specificity: {self.specificity}")
+
     
-
-
-
-
-
 
 
 
 '''
-
-# can be changed to whatever model we are actually using
-class decision_tree_model:
-    
-    def __init__(self): 
-        self.backend = Backend()
-
-# ===================================== main methods
-  
-
-    #4 in progress ::
-    # [] fold training | train the model in the fold
-    # [] fold testing  | test the model in the fold
-    # [] fold evals    | final evaluations per fold, so we can pick optimal k value
-    def run_k_fold_validation(self, KFolds):
-        # 4: K-Fold split
-        feature_fold = self.backend.generate_k_folds(self.train_features, KFolds)
-        label_fold = self.backend.generate_k_folds(self.train_labels, KFolds)
-
-        # runs fold validation K times
-        for i in range(KFolds):
-            
-            # data held out to test current Kfold run
-            val_feature_data = feature_fold[i]
-            val_label_data = label_fold[i]
-
-            # data used to train during current Kfold run
-            training_feature_data = pd.concat(feature_fold[:i] + feature_fold[i + 1:])
-            training_label_data = pd.concat(label_fold[:i] + label_fold[i + 1:])
-
-            print(f"\nFold {i + 1}")
-            print("Training size:", len(training_feature_data))
-            print("Validation size:", len(val_feature_data))
-
-    # 5: final model evaluation
-    def model_evaluation(self):
-        y_true = self.test_labels.values
-        y_pred = self.predictions
-
-        trueneg, truepos, false_neg, false_pos = confusion_matrix(y_pred, y_true)
-
-        accuracy = (truepos+ trueneg) / len(y_true)
-        precision = truepos / (truepos + false_pos) 
-        sensitivity = truepos / (truepos + false_neg) 
-        specificity = trueneg / (trueneg + false_pos) 
-
-        print("Model Evaluation")
-        print(f"True Positive: {truepos}\nFalse Positive: {false_pos}")
-        print(f"True Negative: {trueneg}\nFalse Negative: {false_neg}")
-
-        print(f"Accuracy: {accuracy}\nPrecision: {precision}\nSensitivity: {sensitivity}\nSpecificity: {specificity}")
-      
-# =============================== !!!!!!!!!!!!!! finish this class up
 class svm_model():
     # 7 SVM
     def train_svm(self, epochs=100):
@@ -282,7 +262,8 @@ class svm_model():
         self.predictions = (outputs >= 0).astype(int).flatten()
         """
         print("Testing Complete")
-'''
+
+
 class SVM(nn.Module):
 
     def __init__(self, input_dim):
@@ -291,3 +272,4 @@ class SVM(nn.Module):
 
     def forward(self, x):
         return self.linear(x)
+'''

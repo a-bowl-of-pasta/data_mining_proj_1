@@ -121,7 +121,7 @@ class Backend:
           'None-Minimal':0,
           'Moderate':1,
           'Moderately Severe':1,
-          'Severe':1
+          'Severe':2
         })
 
         Mental_Health_Data = Mental_Health_Data.drop(columns=["User_ID"])
@@ -130,7 +130,7 @@ class Backend:
     # ================ phase 2 : data splitting & prep for training
     #2.0: 80/20 Split
     def train_test_split(self, Mental_Health_Data):
-
+        
         #---- 80/20 Split
         # find my index for 80% of dataset
         split_index = int(0.8 * len(Mental_Health_Data))
@@ -142,18 +142,27 @@ class Backend:
         return training_data, testing_data
     
     #2.1: Generate Train/Test Inputs  
-    def features_train_test(self, training_data, testing_data):
-       
-        features_train = training_data.drop("PHQ_9_Severity", axis=1)
-        features_test = testing_data.drop("PHQ_9_Severity", axis=1)
+    def features_train_test(self, training_data, testing_data):  
+        
+        drop_cols = ["PHQ_9_Severity", "PHQ_9_Score", "GAD_7_Severity", "GAD_7_Score"]
+            
+        features_train = training_data.drop(drop_cols, axis=1)
+        features_test = testing_data.drop(drop_cols, axis=1)     
 
         return features_train, features_test
 
     #2.2: Generate Train/Test Outputs
     def labels_train_test(self, training_data, testing_data):
-        
+        # options
+        '''
+        drag into the comments the one you don't want
         labels_train = training_data["PHQ_9_Severity"]
         labels_test = testing_data["PHQ_9_Severity"]
+        
+        '''
+        labels_train = training_data["GAD_7_Severity"]
+        labels_test = testing_data["GAD_7_Severity"]
+        
 
         return labels_train, labels_test
 
@@ -168,7 +177,7 @@ class Backend:
         return left_tree_idxs, right_tree_idxs
     
     def most_common_label(self, labels):
-        counter = Counter(labels)
+        counter = Counter(labels.flatten())
         return counter.most_common(1)[0][0]
 
     def entropy(self, condition_prob):
@@ -225,19 +234,18 @@ class Backend:
         left_subtree_length, right_subtree_length = len(left_tree_idxs), len(right_tree_idxs)
 
         # entropy for the labels
-        label_counts = np.bincount(labels.astype(int))
-        label_entropy = self.entropy(label_counts[0] / label_column_length)
-        label_entropy += self.entropy(label_counts[1] / label_column_length)
+        label_frequencies = np.bincount(labels.flatten().astype(int), minlength=2)
+        label_entropy = sum(self.entropy(freq / label_column_length) for freq in label_frequencies)
 
-        # frequency of each label occurring with each condition (left tree / right tree)
-        left_label_counts = np.bincount(labels[left_tree_idxs].astype(int), minlength=2)
-        right_label_counts = np.bincount(labels[right_tree_idxs].astype(int), minlength=2)
 
-        left_entropy = self.entropy(left_label_counts[0] /left_subtree_length)
-        left_entropy += self.entropy(left_label_counts[1] /left_subtree_length)
+        # frequency and entropy of each label occurring with each condition
+        # left tree = condition 1 | right tree = condition 2
+        left_label_frequencies = np.bincount(labels[left_tree_idxs].flatten().astype(int), minlength=2)
+        left_entropy = sum(self.entropy(freq / left_subtree_length) for freq in left_label_frequencies)
 
-        right_entropy = self.entropy(right_label_counts[0] /right_subtree_length)
-        right_entropy += self.entropy(right_label_counts[1] /right_subtree_length)
+        right_label_frequencies = np.bincount(labels[right_tree_idxs].flatten().astype(int), minlength=2)
+        right_entropy = sum(self.entropy(freq / right_subtree_length) for freq in right_label_frequencies)
+
 
         # weighted entropy = 
         # (condition_1 prob)(entropy_1) + (condition_2 prob)(entropy_2) + ... +(condition_n prob)(entropy_n)

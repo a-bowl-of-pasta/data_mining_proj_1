@@ -1,4 +1,4 @@
-from model.model_driver import Decision_Tree_Model
+from model.decision_tree_driver import Decision_Tree_Model
 import os
 
 # =================== things that need to get done =================
@@ -20,24 +20,36 @@ if __name__ == "__main__":
     # ===== config variables
     datasetFile = "dataset/Social_Media_Mental_Health.csv"
     
-    Kvalue = 5
+    tree_max_depth = 3
     Kfolds = 5
 
     # ==== build model
-    decision_tree = Decision_Tree_Model()
+    decision_tree = Decision_Tree_Model(max_depth=tree_max_depth , min_samples_split=2)
 
     decision_tree.build_model(datasetFile)
+    input("press <enter> to continue program")
+    os.system('cls')
+
     decision_tree.peek_processed_data()
     input("press <enter> to continue program")
-    os.system('cls')  
+    os.system('cls')   
     
-    # === splits data & preps for k_fold / testing
+    # === learn model
     decision_tree.learn_model()
     input("press <enter> to continue program")
     os.system('cls')  
     
-    # === k fold validation 
+    # === kfold validation
     #decision_tree.run_k_fold_validation(Kfolds)
+
+    # === evaluate model 
+    decision_tree.model_eval()
+    input("press <enter> to continue program")
+    os.system('cls')  
+
+    decision_tree.evaluation_summary()
+
+
 
 
 
