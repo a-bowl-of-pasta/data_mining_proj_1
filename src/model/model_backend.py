@@ -6,6 +6,8 @@
 import pandas as pd
 import numpy as np
 from math import log2
+from collections import Counter
+
 
 class Backend:
 
@@ -122,7 +124,7 @@ class Backend:
           'Severe':1
         })
 
-
+        Mental_Health_Data = Mental_Health_Data.drop(columns=["User_ID"])
         return Mental_Health_Data
 
     # ================ phase 2 : data splitting & prep for training
@@ -175,7 +177,7 @@ class Backend:
             return 0
        
         else:
-            entropy_val = -(condition_prob * math.log2(condition_prob))
+            entropy_val = -(condition_prob * log2(condition_prob))
             return entropy_val
 
     def best_split(self, features, labels, total_features):
@@ -273,74 +275,3 @@ class Backend:
         return fold_container
 
     # ================ phase 5 : model evaluations 
-
-
-
-
-class Backend__old__version: 
-
-    def binary_entropy(self, feature_column, label_column, label_entropy):
-
-        total = len(feature_column)      
-        condition_output_map = pd.crosstab(feature_column, label_column)
-        condition_totals = condition_output_map.sum(axis=1)
-
-        weighted_entropy = 0.0
-
-        for feature in condition_output_map.index:
-            
-            curr_condition_total = condition_totals[feature]
-            weight = curr_condition_total / total
-            
-            condition_entropy = 0.0
-            for label in condition_output_map.columns:
-                
-                count = condition_output_map.loc[feature, label]
-                p_i = count / curr_condition_total
-                
-                if p_i > 0:
-                    condition_entropy -= p_i * np.log2(p_i)
-            
-            weighted_entropy += weight * condition_entropy
-
-        # information gain
-        return label_entropy - weighted_entropy
-
-
-
-    def continuous_entropy(self, feature_column, label_column, label_entropy):
-         
-        # get all midpoints between consecutive unique values
-        sorted_values = feature_column.sort_values().unique()
-        thresholds = (sorted_values[:-1] + sorted_values[1:]) / 2
-
-        best_entropy = float('inf')
-        best_threshold = None
-
-        for threshold in thresholds:
-            # convert continuous column to binary using this threshold
-            binary_column = (feature_column >= threshold).astype(int)
-            
-            # reuse your binary entropy function
-            entropy = self.binary_entropy(binary_column, label_column, label_entropy)
-            
-            if entropy > best_entropy:
-                best_entropy = entropy
-                best_threshold = threshold
-
-        return best_entropy, best_threshold
-
-
-    def column_entropy(self, feature_column, label_column, label_entropy):
-        
-        if feature_column.nunique() == 2:
-            entropy = self.binary_entropy(feature_column, label_column, label_entropy)
-            return entropy
-        
-        else:
-            entropy = self.continuous_entropy(feature_column, label_column, label_entropy)
-            return entropy
-    
-
-    def test_backend_api(self):
-        return "backend works fine"

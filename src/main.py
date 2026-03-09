@@ -1,6 +1,4 @@
-from readline import backend
-
-from model import Decision_Tree_Model
+from model.model_driver import Decision_Tree_Model
 import os
 
 # =================== things that need to get done =================
@@ -26,19 +24,20 @@ if __name__ == "__main__":
     Kfolds = 5
 
     # ==== build model
-    decision_tree = Decision_Tree_model()
+    decision_tree = Decision_Tree_Model()
 
     decision_tree.build_model(datasetFile)
+    decision_tree.peek_processed_data()
     input("press <enter> to continue program")
     os.system('cls')  
     
     # === splits data & preps for k_fold / testing
-    decision_tree.data_split()
+    decision_tree.learn_model()
     input("press <enter> to continue program")
     os.system('cls')  
     
     # === k fold validation 
-    decision_tree.run_k_fold_validation(Kfolds)
+    #decision_tree.run_k_fold_validation(Kfolds)
 
 
 

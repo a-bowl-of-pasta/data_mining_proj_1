@@ -6,7 +6,6 @@
 # this one just pieces it together
 
 from .model_backend import Backend
-from collections import Counter
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -44,7 +43,7 @@ class Decision_Tree_Model:
 
         print("loading dataset...")
         dataset = self.backend.load_dataset(dataFile, peekRawDataset)
-        
+
         print("normalizing dataset...")
         dataset = self.backend.normalize_data(dataset)
         
@@ -52,13 +51,12 @@ class Decision_Tree_Model:
         dataset = self.backend.binary_encoding(dataset)
 
         self.dataset = dataset
-        print("loaded, normalized, and encoded dataset...")
-        
+        print()
         print("splitting data...")
-        
+
         self._data_split()
         print("data split & (feature / ground truth) sets created...")
-        
+        print()
         print(" ... model built | ready to learn")
 
     # 3: learns model | training phase
