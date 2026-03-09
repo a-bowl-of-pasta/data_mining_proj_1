@@ -1,5 +1,6 @@
-from model.model_driver import decision_tree_model 
+from readline import backend
 
+from model import Decision_Tree_Model
 import os
 
 # =================== things that need to get done =================
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     Kfolds = 5
 
     # ==== build model
-    decision_tree = decision_tree_model()
+    decision_tree = Decision_Tree_model()
 
     decision_tree.build_model(datasetFile)
     input("press <enter> to continue program")
@@ -39,9 +40,38 @@ if __name__ == "__main__":
     # === k fold validation 
     decision_tree.run_k_fold_validation(Kfolds)
 
+
+
+'''
+    # ===Decision Tree
+    training_data, testing_data = backend.train_test_split(datasetFile)
+
+    features_train, features_test = backend.features_train_test(training_data, testing_data)
+
+    labels_train, labels_test = backend.labels_train_test(training_data, testing_data)
+
+    X_train = features_train.to_numpy()
+    y_train = labels_train.to_numpy()
+
+    tree = DecisionTree(max_depth=5)
+    tree.fit(X_train, y_train)
+
+    X_test = features_test.to_numpy()
+    y_test = labels_test.to_numpy()
+
+    predictions = tree.predict(X_test)
+
+    for i in range(len(predictions)):
+        print("Prediction:", predictions[i], "| Actual:", y_test[i])
+
     # === final model evaluation
     #knn.model_evaluation()
-    
+
+    backend.test_labels = labels_test
+    backend.predictions = predictions
+
+    backend.model_evaluation()
+'''
 
 # DataPoint = each piece of data from the dataset
 # DataGroup = the final classifications 

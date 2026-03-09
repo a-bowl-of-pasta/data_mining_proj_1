@@ -5,48 +5,22 @@
 
 import pandas as pd
 import numpy as np
+from math import log2
 
-class Backend: 
+class Backend:
 
-    def get_jaccard_dist(self):
-        pass
+    # =============== phase 1 : data loading and processing
+    #1.0: Read CSV file in 
+    def load_dataset(self, datasetFile, viewRawDataset):
 
-
-    # Define Folder Function
-    def generate_k_folds(self, data, k):
-    
-        ##Gent Length of size of each fold
-        f_size = len(data) // k
-        fold_container = []
-
-        # loop for each section
-        for i in range(k):
-            # We want to start where the last chunk left off
-            # fold pos * chunk size
-            start = i * f_size
-            # end is start + size
-            end = start + f_size
-
-            if i == k - 1:  # last fold gets remainder
-                fold = data.iloc[start:]
-            else:
-                fold = data.iloc[start:end]
-            # pop on to container
-            fold_container.append(fold)
-
-        return fold_container
-
-
-    #1: Read CSV file in 
-    def load_dataset(self, datasetFile):
-
-        print("Read in CSV")
         print("Reading in File: ", datasetFile)
         
         try:
             Mental_Health_Data = pd.read_csv(datasetFile)
-            print("DataFrame top 15 Records:")
-            print(Mental_Health_Data.head())
+            
+            if(viewRawDataset):
+                print("raw dataset | peeking data frame head:")
+                print(Mental_Health_Data.head())
 
         except Exception as e:
             print("Ah Hamburgers:", e)
@@ -54,8 +28,28 @@ class Backend:
 
         return Mental_Health_Data
 
+    #1.1: Normalization   
+    def normalize_data(self, Mental_Health_Data): 
 
-    #2: Convert to Binary 
+        Normalize_cols = Mental_Health_Data.select_dtypes(include=['int64', 'float64']).columns
+
+        #print("Integer Columns:")
+        #print(numeric_cols)
+
+        #loop through my Columns
+        for col in Normalize_cols:
+            # equation is X - min / max - min
+            # Step 1 Find min and max
+            min_val = Mental_Health_Data[col].min()
+            max_val = Mental_Health_Data[col].max()
+
+            # run equation: Current - min / max - min
+            if max_val != min_val:
+                Mental_Health_Data[col] = (Mental_Health_Data[col] - min_val) / (max_val - min_val)
+
+        return Mental_Health_Data    
+
+    #1.2: Convert to Binary 
     def binary_encoding(self, Mental_Health_Data):
 
         #        -- Activity Type
@@ -131,30 +125,8 @@ class Backend:
 
         return Mental_Health_Data
 
-
-    #2: Normalization   
-    def normalize_data(self, Mental_Health_Data): 
-
-        Normalize_cols = Mental_Health_Data.select_dtypes(include=['int64', 'float64']).columns
-
-        #print("Integer Columns:")
-        #print(numeric_cols)
-
-        #loop through my Columns
-        for col in Normalize_cols:
-            # equation is X - min / max - min
-            # Step 1 Find min and max
-            min_val = Mental_Health_Data[col].min()
-            max_val = Mental_Health_Data[col].max()
-
-            # run equation: Current - min / max - min
-            if max_val != min_val:
-                Mental_Health_Data[col] = (Mental_Health_Data[col] - min_val) / (max_val - min_val)
-
-        return Mental_Health_Data
-    
-
-    #4: 80/20 Split
+    # ================ phase 2 : data splitting & prep for training
+    #2.0: 80/20 Split
     def train_test_split(self, Mental_Health_Data):
 
         #---- 80/20 Split
@@ -167,8 +139,7 @@ class Backend:
 
         return training_data, testing_data
     
-
-    #4: Generate Train/Test Inputs  
+    #2.1: Generate Train/Test Inputs  
     def features_train_test(self, training_data, testing_data):
        
         features_train = training_data.drop("PHQ_9_Severity", axis=1)
@@ -176,8 +147,7 @@ class Backend:
 
         return features_train, features_test
 
-
-    #4: Generate Train/Test Outputs
+    #2.2: Generate Train/Test Outputs
     def labels_train_test(self, training_data, testing_data):
         
         labels_train = training_data["PHQ_9_Severity"]
@@ -185,6 +155,129 @@ class Backend:
 
         return labels_train, labels_test
 
+    # ================ phase 3 : model calculations & training
+    
+    def split(self, feature_column, threshold):
+
+        # left and right sub tree indices 
+        left_tree_idxs = np.argwhere(feature_column <= threshold).flatten()
+        right_tree_idxs = np.argwhere(feature_column > threshold).flatten()
+        
+        return left_tree_idxs, right_tree_idxs
+    
+    def most_common_label(self, labels):
+        counter = Counter(labels)
+        return counter.most_common(1)[0][0]
+
+    def entropy(self, condition_prob):
+       
+        if(condition_prob == 0):
+            return 0
+       
+        else:
+            entropy_val = -(condition_prob * math.log2(condition_prob))
+            return entropy_val
+
+    def best_split(self, features, labels, total_features):
+        
+        best_gain = -1 
+        split_idx, split_threshold = None, None
+        
+        # find threshold & index that splits into the best subtree
+        for feature_idx in range(total_features):
+            
+            # isolated feature column
+            feature_column = features[:, feature_idx]
+
+            # the unique values for each feature column
+            unique_vals = np.unique(feature_column)
+
+            # array of thresholds used to partition 
+            # example_uniq_vals           = [1 , 2, 3, 4]
+            # example_partition_threshold = [1.5, 2.5, 3.5] -->|(1+2)/2 = 1.5 |(2+3)/2 = 2.5 
+            partition_thresholds = (unique_vals[:-1] + unique_vals[1:]) / 2
+
+            # loops through threshold array in order to partition and find info gain 
+            for threshold in partition_thresholds:
+                gain = self.information_gain(labels, feature_column, threshold)
+
+                # compare information gain with current best information gain
+                if gain > best_gain:
+                    best_gain = gain
+                    split_idx = feature_idx
+                    split_threshold = threshold
+
+        return split_idx, split_threshold
+
+    def information_gain(self, labels, features, threshold):
+        
+        # left and right subtree index split | left tree = condition 1 & right tree = condition 2
+        left_tree_idxs, right_tree_idxs = self.split(features, threshold)
+
+        # no existing left or right sub tree
+        if len(left_tree_idxs) == 0 or len(right_tree_idxs) == 0:
+            return 0
+       
+        # length of :: label column; left subtree; and right subtree
+        label_column_length = len(labels)
+        left_subtree_length, right_subtree_length = len(left_tree_idxs), len(right_tree_idxs)
+
+        # entropy for the labels
+        label_counts = np.bincount(labels.astype(int))
+        label_entropy = self.entropy(label_counts[0] / label_column_length)
+        label_entropy += self.entropy(label_counts[1] / label_column_length)
+
+        # frequency of each label occurring with each condition (left tree / right tree)
+        left_label_counts = np.bincount(labels[left_tree_idxs].astype(int), minlength=2)
+        right_label_counts = np.bincount(labels[right_tree_idxs].astype(int), minlength=2)
+
+        left_entropy = self.entropy(left_label_counts[0] /left_subtree_length)
+        left_entropy += self.entropy(left_label_counts[1] /left_subtree_length)
+
+        right_entropy = self.entropy(right_label_counts[0] /right_subtree_length)
+        right_entropy += self.entropy(right_label_counts[1] /right_subtree_length)
+
+        # weighted entropy = 
+        # (condition_1 prob)(entropy_1) + (condition_2 prob)(entropy_2) + ... +(condition_n prob)(entropy_n)
+        prob_1 = left_subtree_length / label_column_length
+        prob_2 = right_subtree_length / label_column_length
+        
+        weighted_entropy = (prob_1 * left_entropy) + (prob_2 * right_entropy)
+
+        information_gain = label_entropy - weighted_entropy
+        return information_gain
+    
+    # ================ phase 4 : K fold validation 
+    # 4.0: Define Folder Function
+    def generate_k_folds(self, data, k):
+    
+        ##Gent Length of size of each fold
+        f_size = len(data) // k
+        fold_container = []
+
+        # loop for each section
+        for i in range(k):
+            # We want to start where the last chunk left off
+            # fold pos * chunk size
+            start = i * f_size
+            # end is start + size
+            end = start + f_size
+
+            if i == k - 1:  # last fold gets remainder
+                fold = data.iloc[start:]
+            else:
+                fold = data.iloc[start:end]
+            # pop on to container
+            fold_container.append(fold)
+
+        return fold_container
+
+    # ================ phase 5 : model evaluations 
+
+
+
+
+class Backend__old__version: 
 
     def binary_entropy(self, feature_column, label_column, label_entropy):
 
