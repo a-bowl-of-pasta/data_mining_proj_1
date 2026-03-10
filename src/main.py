@@ -1,5 +1,6 @@
 from model.decision_tree_driver import Decision_Tree_Model
 import os
+from model.SVM import run_svm_experiments
 
 # =================== things that need to get done =================
 #  
@@ -49,7 +50,8 @@ if __name__ == "__main__":
 
     decision_tree.evaluation_summary()
 
-
+    print("---------------SVM---------------")
+    run_svm_experiments(datasetFile)
 
 
 
