@@ -79,7 +79,7 @@ class Decision_Tree_Model:
 
 
     # 4: performs k fold validation | either run this or training, not both
-    def k_fold_validation(self, k : int):
+    def k_fold_validation(self, labelChoice,  k : int):
         
         # 4: train / test split && fold creation 
         train_dataset, test_dataset = self.backend.train_test_split(self.dataset)
@@ -97,7 +97,7 @@ class Decision_Tree_Model:
             
             # == train phase
             k_train_feature, k_test_feature = self.backend.features_train_test(k_train, k_test)
-            k_train_truth, k_test_truth = self.backend.truth_train_test(k_train, k_test)
+            k_train_truth, k_test_truth = self.backend.truth_train_test(k_train, k_test, labelChoice)
 
             k_feature_np_array = k_train_feature.values
             k_truth_np_array = k_train_truth.values
@@ -119,14 +119,17 @@ class Decision_Tree_Model:
             ave_eval_scores[1] += tp / (tp + fp) 
             ave_eval_scores[2] += tp / (tp + fn) 
             ave_eval_scores[3] += tn / (tn + fp)
+
+            print(f"finished k-fold itearation {i + 1} of {k} iterations...")
         
         ave_eval_scores = [scores / k for scores in ave_eval_scores]
+        
+        print()
+        print(f"K fold cross validation eval summary for k: {k}")
+        for i in range(len(ave_eval_scores)): 
+            print(f"average {eval_output_truths[i]}:\t{ave_eval_scores[i]}")
+        print()
 
-
-
-
-            
-            
 
     # 5: final evaluation 
     def model_eval(self):

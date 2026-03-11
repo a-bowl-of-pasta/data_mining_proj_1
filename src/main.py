@@ -39,7 +39,7 @@ if __name__ == "__main__":
     if run_kfold == True:
 
         # === kfold validation
-        decision_tree.k_fold_validation(Kfolds)
+        decision_tree.k_fold_validation(label_options[0],Kfolds[0] )
         input("press <enter> to continue program")
         os.system('cls')
 
@@ -60,6 +60,7 @@ if __name__ == "__main__":
         os.system('cls')  
 
         decision_tree.evaluation_summary()
+    
     
     print()
     print("---------------SVM---------------")
