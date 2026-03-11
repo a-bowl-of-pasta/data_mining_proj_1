@@ -60,7 +60,7 @@ def train_svm(input_training, output_training, input_test, output_test, epochs=2
         C = 10
         # hinge_loss For our Gradient Decent
         hinge_loss = torch.mean(torch.clamp(1 - y * outputs, min=0))
-        #Regulaization L1
+        #Regulaization L2
         loss = 0.5 * torch.sum(model.linear.weight ** 2) + C * hinge_loss
         #clear out gradients for calculation ( have to do each loop )
         optimizer.zero_grad()
@@ -131,7 +131,10 @@ def run_train(train_data, test_data, backend):
 def run_kfold(dataset, backend, k=5):
     folds = backend.generate_k_folds(dataset, k)
 
-    scores = []
+    accuracy = []
+    precision = []
+    Sensitivity = []
+    f1_container = []
 
     for i in range(k):
         # Ok for this Put test in a side pocket
@@ -142,9 +145,12 @@ def run_kfold(dataset, backend, k=5):
         # run training
         acc, prec, rec, f1 = run_train(train_data, test_data, backend)
 
-        scores.append(acc)
+        accuracy.append(acc)
+        precision.append(prec)
+        Sensitivity.append(rec)
+        f1_container.append(f1)
 
-    return np.mean(scores)
+    return np.mean(accuracy), np.mean(precision), np.mean(Sensitivity), np.mean(f1_container)
 
 #----------------------------- MAIN
 def run_svm_experiments(dataset_file):
@@ -166,8 +172,8 @@ def run_svm_experiments(dataset_file):
     train_data, test_data = backend.train_test_split(dataset)
 
     acc, prec, rec, f1 = run_train(train_data, test_data, backend)
-
-    print("\n80/20 Split")
+    print()
+    print("80/20 Split")
     print("Accuracy:", acc)
     print("Precision:", prec)
     print("Recall:", rec)
@@ -180,8 +186,8 @@ def run_svm_experiments(dataset_file):
     test_data = dataset.iloc[split_index:]
 
     acc, prec, rec, f1 = run_train(train_data, test_data, backend)
-
-    print("\n20/80 Split")
+    print()
+    print("20/80 Split")
     print("Accuracy:", acc)
     print("Precision:", prec)
     print("Recall:", rec)
@@ -189,8 +195,13 @@ def run_svm_experiments(dataset_file):
 
 
     # K-Fold
-    kfold_accuracy = run_kfold(dataset, backend, 5)
+    acc, prec, rec, f1 = run_kfold(dataset, backend, 5)
+    print()
+    print("K Fold")
+    print("Accuracy:", acc)
+    print("Precision:", prec)
+    print("Recall:", rec)
+    print("F1 Score:", f1)
 
-    print("\n5-Fold Cross Validation Accuracy:", kfold_accuracy)
 
 
