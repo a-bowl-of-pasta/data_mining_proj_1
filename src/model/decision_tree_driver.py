@@ -71,7 +71,7 @@ class Decision_Tree_Model:
         # convert pandas dataframe into numpy array
         # array    <---    dataframe 
         feature_np_array = self.train_features.values
-        truth_np_array = self.train_ground_truth.values
+        truth_np_array = self.train_ground_truths.values
 
         self.root = self._build_tree(feature_np_array, truth_np_array, depth=0)
         
@@ -125,7 +125,8 @@ class Decision_Tree_Model:
         ave_eval_scores = [scores / k for scores in ave_eval_scores]
         
         print()
-        print(f"K fold cross validation eval summary for k: {k}")
+        print(f"K fold cross validation eval summary for:")
+        print(f"k = {k} | max depth = {self.max_depth} | min samp = {self.min_samples_split} ")
         for i in range(len(ave_eval_scores)): 
             print(f"average {eval_output_truths[i]}:\t{ave_eval_scores[i]}")
         print()

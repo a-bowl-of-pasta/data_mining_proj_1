@@ -10,8 +10,6 @@ import os
 #  [] clean up project code & debug
 #  [] SVM
 
-
-
 if __name__ == "__main__": 
 
     print('Jonathan McClain, Oko Kenechukwu, Anthony Hernandez')
@@ -24,12 +22,17 @@ if __name__ == "__main__":
     # PHQ_9_Severity = depression, GAD_7_Severity = anxiety
     label_options = ['depression_severity','anxiety_severity']
 
-    tree_max_depth = 3
+    tree_max_depth = 11
+    min_samples_split = 27
     Kfolds = [5, 10, 15, 20] 
-    run_kfold = True
+
+    kfold = Kfolds[1]
+    chosen_label = label_options[1]
+
+    run_kfold = False
 
     # ==== build model
-    decision_tree = Decision_Tree_Model(max_depth=tree_max_depth , min_samples_split=2)
+    decision_tree = Decision_Tree_Model(max_depth=tree_max_depth , min_samples_split=min_samples_split)
 
     decision_tree.build_model(datasetFile, peekRawDataset=False)
     input("press <enter> to continue program")
@@ -39,13 +42,13 @@ if __name__ == "__main__":
     if run_kfold == True:
 
         # === kfold validation
-        decision_tree.k_fold_validation(label_options[0],Kfolds[0] )
+        decision_tree.k_fold_validation(chosen_label,kfold )
         input("press <enter> to continue program")
         os.system('cls')
 
     else:
         # === learn model
-        decision_tree.learn_model(labelChoice = label_options[0])
+        decision_tree.learn_model(labelChoice = chosen_label)
         input("press <enter> to continue program")
         os.system('cls') 
         
@@ -61,9 +64,9 @@ if __name__ == "__main__":
 
         decision_tree.evaluation_summary()
     
-    
-    print()
-    print("---------------SVM---------------")
+
+    #print()
+    #print("---------------SVM---------------")
     #run_svm_experiments(datasetFile)
 
 

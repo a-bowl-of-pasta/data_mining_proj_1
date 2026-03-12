@@ -126,8 +126,8 @@ class Backend:
           "Mild":0,
           'None-Minimal':0,
           'Moderate':1,
-          'Moderately Severe':2,
-          'Severe':3
+          'Moderately Severe':1,
+          'Severe':1
         })
 
         Mental_Health_Data = Mental_Health_Data.drop(columns=["User_ID"])
@@ -272,6 +272,7 @@ class Backend:
     # 4.0: Define Folder Function
     def generate_k_folds(self, data, K):
     
+        data = data.sample(frac=1, random_state=42).reset_index(drop=True)
         # fold size = data size / number of folds
         # data = 100 | k = 5 | fold_size = 100 / 5 = 20
         fold_size = len(data) // K
