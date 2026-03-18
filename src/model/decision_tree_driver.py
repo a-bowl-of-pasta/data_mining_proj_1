@@ -36,6 +36,15 @@ class Decision_Tree_Model:
 
     # = = = = = = = = = = = = = = = = = main API methods
     # 1 & 2: builds model & sets up data for training
+
+    def load_train_set(self, trainSet):
+        self.train_dataset = self.backend.load_dataset(trainSet, False)
+        
+
+    def load_test_set(self, testSet):
+        self.test_dataset = self.backend.load_dataset(testSet, False)
+
+
     def build_model(self, dataFile, peekRawDataset=False):
         print("Currently building model ... ")
         print()
@@ -53,20 +62,26 @@ class Decision_Tree_Model:
         print()
         print(" ... model built | ready to learn")
 
+    # 2: data processing
+    def feature_label_split(self, label_choice):
+        self.train_features, self.test_features = self.backend.features_train_test(self.train_dataset,self.test_dataset, 'alt')
+        self.train_ground_truths, self.test_ground_truths = self.backend.truth_train_test(self.train_dataset, self.test_dataset, label_choice)
 
-    # 3: learns model | training phase
-    def learn_model(self, labelChoice):  
 
-        print("learning model | building tree...")
+    def process_data(self, label_choice):
         print()
         print("splitting data...")
 
-        self._data_split(labelChoice)
+        self._data_split(label_choice)
 
         print("data split & (feature / ground truth) sets created...")
         print()
-        print(f"chosen class for model prediction :: {labelChoice}...")
+        print(f"chosen class for model prediction :: {label_choice}...")
         print()
+
+    # 3: learns model | training phase
+    def learn_model(self ):  
+        print("learning model | building tree...")
 
         # convert pandas dataframe into numpy array
         # array    <---    dataframe 

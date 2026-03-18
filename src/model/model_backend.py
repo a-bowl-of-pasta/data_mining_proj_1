@@ -149,10 +149,13 @@ class Backend:
         return training_data, testing_data
 
     # Generate Train/Test Inputs  
-    def features_train_test(self, training_data, testing_data):
+    def features_train_test(self, training_data, testing_data, drop_label='default'):
 
-        # remove severity & score from training | score heavily predicts severity 
-        drop_cols = ["Grade class"]
+        # remove severity & score from training | score heavily predicts severity
+        if drop_label == 'default':
+            drop_cols = ["PHQ_9_Severity", "PHQ_9_Score", "GAD_7_Severity", "GAD_7_Score"]
+        elif drop_label == 'alt':
+            drop_cols = ['Wine Names']
 
         features_train = training_data.drop(drop_cols, axis=1)
         features_test = testing_data.drop(drop_cols, axis=1)
@@ -163,12 +166,16 @@ class Backend:
     def truth_train_test(self, training_data, testing_data, label_choice):
 
         if label_choice == 'anxiety_severity':
-            ground_truth_train = training_data["Grade class"]
-            ground_truth_test = testing_data["Grade class"]
+            ground_truth_train = training_data["GAD_7_Severity"]
+            ground_truth_test = testing_data["GAD_7_Severity"] 
 
+        elif label_choice == 'depression_severity':
+            ground_truth_train = training_data["PHQ_9_Severity"]
+            ground_truth_test = testing_data["PHQ_9_Severity"]      
+              
         else:
-            ground_truth_train = training_data["Grade class"]
-            ground_truth_test = testing_data["Grade class"]
+            ground_truth_test = testing_data[label_choice]
+            ground_truth_train = training_data[label_choice]
 
         return ground_truth_train, ground_truth_test
 
