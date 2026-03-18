@@ -32,14 +32,14 @@ def train_svm(input_training, output_training, input_test, output_test, epochs=2
     # Outputs
     output_training = torch.tensor(output_training.values, dtype=torch.float32).view(-1,1)
     output_test = torch.tensor(output_test.values, dtype=torch.float32).view(-1,1)
-
+    #print(output_test)
 
     # ------------------ Convert 0 to -1 for SVM
 
     # Convert labels from {0,1} to {-1,1} since SVM hinge loss requires signed labels
     output_training = torch.where(output_training == 0, -1, 1)
     output_test = torch.where(output_test == 0, -1, 1)
-    #print(output_training)
+    #print(output_test)
     #print(output_test)
     # ------------------ SVM Contruct
     # define model object with SVM construction of the
@@ -48,7 +48,7 @@ def train_svm(input_training, output_training, input_test, output_test, epochs=2
     # ------------------ Gradient Decent
     # Initialize Graident Optimizer engine
     # LR = Learning rate start with .1
-    optimizer = optim.SGD(model.parameters(), lr=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
 
     for epoch in range(epochs):
         perm = torch.randperm(input_training.size(0))
@@ -56,7 +56,7 @@ def train_svm(input_training, output_training, input_test, output_test, epochs=2
         y = output_training[perm]
 
         outputs = model(X)
-        #Regulaization Parameter Lamda?
+        #Regulaization Parameter Lamda
         C = 10
         # hinge_loss For our Gradient Decent
         hinge_loss = torch.mean(torch.clamp(1 - y * outputs, min=0))
@@ -111,7 +111,10 @@ def matrix_metrics(pred, true):
     Sensitivity = truepos / (truepos + falseneg + 1e-10)
 
     f1 = 2 * (precision * Sensitivity) / (precision + Sensitivity + 1e-10)
-
+    print("True Positives: {}".format(truepos))
+    print("True Negatives: {}".format(trueneg))
+    print("False Positives: {}".format(falsepos))
+    print("False Negatives: {}".format(falseneg))
     return accuracy, precision, Sensitivity, f1
 
 # ---------------------------- Run One off
@@ -119,89 +122,59 @@ def matrix_metrics(pred, true):
 def run_train(train_data, test_data, backend):
     # Construct ML Data sets
     input_training, input_test = backend.features_train_test(train_data, test_data)
-    output_training, output_test = backend.labels_train_test(train_data, test_data)
+    output_training, output_test = backend.truth_train_test(train_data, test_data,'xanxiety_severity')
     # run Raw training
     pred, true = train_svm(input_training, output_training, input_test, output_test)
 
     return matrix_metrics(pred, true)
 
 
-# ---------------------------- K-Fold Cross Validation
-
-def run_kfold(dataset, backend, k=5):
-    folds = backend.generate_k_folds(dataset, k)
-
-    accuracy = []
-    precision = []
-    Sensitivity = []
-    f1_container = []
-
-    for i in range(k):
-        # Ok for this Put test in a side pocket
-        test_data = folds[i]
-        # take non index folds and put together
-        train_folds = [folds[j] for j in range(k) if j != i]
-        train_data = pd.concat(train_folds)
-        # run training
-        acc, prec, rec, f1 = run_train(train_data, test_data, backend)
-
-        accuracy.append(acc)
-        precision.append(prec)
-        Sensitivity.append(rec)
-        f1_container.append(f1)
-
-    return np.mean(accuracy), np.mean(precision), np.mean(Sensitivity), np.mean(f1_container)
 
 #----------------------------- MAIN
-def run_svm_experiments(dataset_file):
+def run_svm_experiments(dataset_file, test_file):
     # Generate Backend Engine
     backend = Backend()
     # load
     dataset = backend.load_dataset(dataset_file, False)
+    testset = backend.load_dataset(test_file, False)
     # Normalize ints
-    dataset = backend.normalize_data(dataset)
-    # convert to binary 
-    dataset = backend.binary_encoding(dataset)
+    #dataset = backend.normalize_data(dataset)
+    # convert to binary
+    #dataset = backend.binary_encoding(dataset)
 
     # Need Randomizer!
     dataset = dataset.sample(frac=1).reset_index(drop=True)
-
+    testset = testset.sample(frac=1).reset_index(drop=True)
     print("\n----- SVM Evaluation -----")
 
     # 80 / 20
-    train_data, test_data = backend.train_test_split(dataset)
+    #train_data, test_data = backend.train_test_split(dataset)
 
-    acc, prec, rec, f1 = run_train(train_data, test_data, backend)
+    acc, prec, rec, f1 = run_train(dataset, testset, backend)
     print()
-    print("80/20 Split")
+    print("90/10 Split")
     print("Accuracy:", acc)
     print("Precision:", prec)
     print("Recall:", rec)
     print("F1 Score:", f1)
 
     # 20 / 80
-    split_index = int(0.2 * len(dataset))
+    #split_index = int(0.2 * len(dataset))
 
-    train_data = dataset.iloc[:split_index]
-    test_data = dataset.iloc[split_index:]
+    # Change up! Do test from start to end
+    #train_data = dataset.iloc[:split_index]
+    #test_data = dataset.iloc[split_index:]
 
-    acc, prec, rec, f1 = run_train(train_data, test_data, backend)
+    acc, prec, rec, f1 = run_train(testset, dataset, backend)
     print()
-    print("20/80 Split")
+    print("10/90 Split")
     print("Accuracy:", acc)
     print("Precision:", prec)
     print("Recall:", rec)
     print("F1 Score:", f1)
 
 
-    # K-Fold
-    acc, prec, rec, f1 = run_kfold(dataset, backend, 5)
-    print()
-    print("K Fold")
-    print("Accuracy:", acc)
-    print("Precision:", prec)
-    print("Recall:", rec)
-    print("F1 Score:", f1)
+
 
 
 
