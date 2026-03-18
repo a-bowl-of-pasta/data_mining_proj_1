@@ -17,8 +17,7 @@ if __name__ == "__main__":
     print()
     
     # ===== config variables
-    datasetFile = "dataset/trainingdataset.csv"
-    testsetFile = "dataset/testingdataset.csv"
+    datasetFile = "dataset/Social_Media_Mental_Health.csv"
     
     # PHQ_9_Severity = depression, GAD_7_Severity = anxiety
     label_options = ['depression_severity','anxiety_severity']
@@ -68,6 +67,6 @@ if __name__ == "__main__":
 
     #print()
     #print("---------------SVM---------------")
-    #run_svm_experiments(datasetFile,testsetFile)
+    #run_svm_experiments(datasetFile)
 
 
