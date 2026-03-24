@@ -23,6 +23,7 @@ def alt_dataset(train_file, test_file, truth_labels, tree_depth, min_samples):
      
     # === learn model
     decision_tree.learn_model()
+    
     input("press <enter> to continue program")
     os.system('cls') 
          
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     # ===== files 
     dataset_file = "dataset/Social_Media_Mental_Health.csv"
     label_options = ['depression_severity','anxiety_severity']
-
+    #===== Phase Two files
     train_file = "dataset/new_train_set.csv"
     test_file = "dataset/new_test_set.csv"
     alt_file_truth_col = "labels"

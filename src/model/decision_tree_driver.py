@@ -131,9 +131,9 @@ class Decision_Tree_Model:
             tn, tp, fn, fp = self._confusion_matrix(k_predictions, k_ground_truth)
 
             ave_eval_scores[0] += (tp + tn) / len(k_ground_truth)
-            ave_eval_scores[1] += tp / (tp + fp) 
-            ave_eval_scores[2] += tp / (tp + fn) 
-            ave_eval_scores[3] += tn / (tn + fp)
+            ave_eval_scores[1] += self._safe_division(tp, (tp + fp))
+            ave_eval_scores[2] += self._safe_division(tp, (tp + fn))
+            ave_eval_scores[3] += self._safe_division(tn, (tn + fp))
 
             print(f"finished k-fold itearation {i + 1} of {k} iterations...")
         
@@ -162,11 +162,13 @@ class Decision_Tree_Model:
 
         print()
         print("sample prediction & ground truth outputs")
-        print("predictions:  ",predictions[:20])
-        print("Ground Truth: ",ground_truth[:20])
+        print("Predicted | Actual")
+        print("-------------------")
 
-        # --- 
-        trueneg, truepos, false_neg, false_pos = self._confusion_matrix(predictions, ground_truth)
+        for pred, true in zip(predictions[:20], ground_truth[:20]):
+            print(f"Predicted: {pred} | Actual: {true}")
+        #TP, FP, FN, TN
+        truepos, false_pos, false_neg, trueneg = self._confusion_matrix(predictions, ground_truth)
         self._evaluation_metric_calculations(truepos, trueneg, false_pos, false_neg, ground_truth)
 
         print()
@@ -237,7 +239,7 @@ class Decision_Tree_Model:
                 return self._traverse_tree(x, node.left)
             return self._traverse_tree(x, node.right)
 
-    # ============ confusion matrix for | matrix of TP, FP, TN, FN  
+    # ============ confusion matrix for | matrix of TP, FP, FN, TN
     def _confusion_matrix(self, y_pred, y_true):
         '''
         tp : predict class 1 & truth is class 1             | 1 & 1 | + & +
@@ -251,15 +253,22 @@ class Decision_Tree_Model:
         false_pos = np.sum((y_true == 0) & (y_pred == 1))
         false_neg = np.sum((y_true == 1) & (y_pred == 0))
 
-        return trueneg, truepos, false_neg, false_pos
+        return truepos, false_pos, false_neg, trueneg
 
     # ============ finds the evaluation scores 
     def _evaluation_metric_calculations(self, tp, tn, fp, fn, ground_truth):
         
         self.accuracy = (tp + tn) / len(ground_truth)
-        self.precision = tp / (tp + fp) 
-        self.sensitivity = tp / (tp + fn) 
-        self.specificity = tn / (tn + fp) 
+        self.precision = self._safe_division(tp, (tp + fp))
+        self.sensitivity = self._safe_division(tp, (tp + fn))
+        self.specificity = self._safe_division(tn, (tn + fp))
+
+    #======== safe division
+    def _safe_division(self, numerator, denominator):
+        if denominator == 0:
+            return 0
+        else:
+            return numerator / denominator
 
 
     # = = = = = = = = = = = = = = = = basic output methods 

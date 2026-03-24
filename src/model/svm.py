@@ -109,20 +109,22 @@ def matrix_metrics(pred, true):
     precision = truepos / (truepos + falsepos + 1e-10)
     #Sensitivity
     Sensitivity = truepos / (truepos + falseneg + 1e-10)
+    #Specificity
+    Specificity = trueneg / (trueneg + falsepos + 1e-10)
 
     f1 = 2 * (precision * Sensitivity) / (precision + Sensitivity + 1e-10)
     print("True Positives: {}".format(truepos))
     print("True Negatives: {}".format(trueneg))
     print("False Positives: {}".format(falsepos))
     print("False Negatives: {}".format(falseneg))
-    return accuracy, precision, Sensitivity, f1
+    return accuracy, precision, Sensitivity, Specificity
 
 # ---------------------------- Run One off
 # Choo Choo
 def run_train(train_data, test_data, backend):
     # Construct ML Data sets
     input_training, input_test = backend.features_train_test(train_data, test_data)
-    output_training, output_test = backend.truth_train_test(train_data, test_data,'xanxiety_severity')
+    output_training, output_test = backend.truth_train_test(train_data, test_data,'labels')
     # run Raw training
     pred, true = train_svm(input_training, output_training, input_test, output_test)
 
@@ -150,13 +152,13 @@ def run_svm_experiments(dataset_file, test_file):
     # 80 / 20
     #train_data, test_data = backend.train_test_split(dataset)
 
-    acc, prec, rec, f1 = run_train(dataset, testset, backend)
+    acc, prec, rec, spec = run_train(dataset, testset, backend)
     print()
     print("90/10 Split")
     print("Accuracy:", acc)
     print("Precision:", prec)
     print("Recall:", rec)
-    print("F1 Score:", f1)
+    print("Specificity:", spec)
 
     # 20 / 80
     #split_index = int(0.2 * len(dataset))
@@ -165,13 +167,14 @@ def run_svm_experiments(dataset_file, test_file):
     #train_data = dataset.iloc[:split_index]
     #test_data = dataset.iloc[split_index:]
 
-    acc, prec, rec, f1 = run_train(testset, dataset, backend)
+    acc, prec, rec, spec = run_train(testset, dataset, backend)
     print()
     print("10/90 Split")
     print("Accuracy:", acc)
     print("Precision:", prec)
     print("Recall:", rec)
-    print("F1 Score:", f1)
+    print("Specificity:", spec)
+ 
 
 
 
